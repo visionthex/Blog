@@ -1,26 +1,34 @@
-main = putStrLn myhtml
+main = putStrLn (render myhtml)
 
-myhtml = makeHtml "Hello title" (h1_ "Hello, World?" <> p_ "My first blog")
+myhtml :: Html
+myhtml =
+  html_
+    "Hello title"
+    (append_ (h1_ "Hello, World?") (p_ "My first blog"))
 
-makeHtml :: String -> String -> String
-makeHtml title content =
-  html_ (head_ (title_ title) <> body_ content)
+html_ :: Title -> Structure -> Html
+html_ title (Structure content) =
+  Html (el "head" (el "title" title) <> el "body" content)
 
-html_ = el "html"
+h1_ :: String -> Structure
+h1_ = Structure . el "h1"
 
-body_ = el "body"
-
-head_ = el "head"
-
-title_ :: String -> String
-title_ = el "title"
-
-h1_ :: String -> String
-h1_ = el "h1"
-
-p_ :: String -> String
-p_ = el "p"
+p_ :: String -> Structure
+p_ = Structure . el "p"
 
 el :: String -> String -> String
 el tag content =
     "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
+
+newtype Html = Html String
+
+newtype Structure = Structure String
+
+type Title = String
+
+append_ :: Structure -> Structure -> Structure
+append_ (Structure first) (Structure second) =
+  Structure (first <> second)
+
+render :: Html -> String
+render (Html html) = html
