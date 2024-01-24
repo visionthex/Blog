@@ -25,3 +25,7 @@ convertStructure structure =
 
 convert :: Html.Title -> Markup.Document -> Html.Html
 convert title = Html.html_ title . foldMap convertStructure
+
+process :: Html.Title -> String -> String
+process title = Html.render .convert title . Markup.parse
+
