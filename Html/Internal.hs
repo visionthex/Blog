@@ -1,17 +1,31 @@
 module Html.Internal where
 
+-- * Types
+
+newtype Html
+  = Html String
+
+newtype Structure
+  = Structure String
+
+type Title
+  = String
+
+-- * EDSL
+
 html_ :: Title -> Structure -> Html
-html_ title (Structure content) =
-  Html (el "head" (el "title" (escape title)) <> el "body" content)
-
-h1_ :: String -> Structure
-h1_ = Structure . el "h1" . escape
-
-code_ :: String -> Structure
-code_ = Structure . el "pre" . escape
+html_ title content =
+  Html (el "html"
+    (el "head" (el "title" (escape title))
+      <> el "body" (getStructureString content)
+    )
+  )
 
 p_ :: String -> Structure
 p_ = Structure . el "p" . escape
+
+h1_ :: String -> Structure
+h1_ = Structure . el "h1" . escape
 
 ul_ :: [Structure] -> Structure
 ul_ =
@@ -21,25 +35,30 @@ ol_ :: [Structure] -> Structure
 ol_ =
   Structure . el "ol" . concat . map (el "li" . getStructureString)
 
-el :: String -> String -> String
-el tag content =
-    "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
-
-newtype Html = Html String
-
-newtype Structure = Structure String
-
-type Title = String
-
-getStructureString :: Structure -> String
-getStructureString (Structure s) = s
+code_ :: String -> Structure
+code_ = Structure .el "pre" . escape
 
 append_ :: Structure -> Structure -> Structure
-append_ (Structure first) (Structure second) =
-  Structure (first <> second)
+append_ c1 c2 =
+  Structure (getStructureString c1 <> getStructureString c2)
+
+-- * Rendering
 
 render :: Html -> String
-render (Html html) = html
+render html =
+  case html of
+    Html str -> str
+
+-- * Utilities
+
+el :: String -> String -> String
+el tag content =
+  "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
+
+getStructureString :: Structure -> String
+getStructureString content =
+  case content of
+    Structure str -> str
 
 escape :: String -> String
 escape =
@@ -50,7 +69,6 @@ escape =
         '>' -> "&gt;"
         '&' -> "&amp;"
         '"' -> "&quot;"
-        '\'' -> "&#39;"
         _ -> [c]
   in
-  concat . map escapeChar
+    concat . map escapeChar
