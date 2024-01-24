@@ -1,0 +1,6 @@
+#stack.yml
+
+resolver: lts-18.22
+
+packages:
+  - .
