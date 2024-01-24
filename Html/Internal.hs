@@ -1,4 +1,7 @@
 module Html.Internal where
+import Numeric.Natural
+
+
 
 -- * Types
 
@@ -21,11 +24,14 @@ html_ title content =
     )
   )
 
+empty_ :: Structure
+empty_ = Structure ""
+
 p_ :: String -> Structure
 p_ = Structure . el "p" . escape
 
-h1_ :: String -> Structure
-h1_ = Structure . el "h1" . escape
+h_ :: Natural -> String -> Structure
+h_ n = Structure . el ("h1" <> show n) . escape
 
 ul_ :: [Structure] -> Structure
 ul_ =
@@ -72,3 +78,8 @@ escape =
         _ -> [c]
   in
     concat . map escapeChar
+
+concatStructure :: [Structure] -> Structure
+concatStructure list = case list of
+  [] -> empty_
+  x : xs -> x <> concatStructure xs
